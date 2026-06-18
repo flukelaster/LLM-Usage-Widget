@@ -92,11 +92,25 @@ Sources/UsageWidget/
 
 ## Distribution
 
-For sharing beyond your own machine, sign with a **Developer ID Application** identity, enable the
-hardened runtime, and notarize:
+Build a distributable disk image:
 
 ```bash
-codesign --force --options runtime --timestamp --sign "Developer ID Application: …" UsageWidget.app
-xcrun notarytool submit UsageWidget.zip --apple-id … --team-id … --password … --wait
-xcrun stapler staple UsageWidget.app
+./Scripts/release.sh      # → dist/LLM-Usage-Widget.dmg (drag-to-Applications installer)
+```
+
+The build is **arm64 (Apple Silicon)** and **ad-hoc signed** — there's no Apple Developer ID on
+this machine, and a universal arm64+x86_64 build would need full Xcode (`xcbuild`). It runs fine
+when shared, but the **first launch on another Mac** needs a one-time Gatekeeper bypass:
+
+- Right-click the app → **Open** (then confirm), or
+- `xattr -dr com.apple.quarantine "/Applications/UsageWidget.app"`
+
+For a **clean, no-warning build** (recommended if you distribute widely), get an Apple Developer ID
+($99/yr) and notarize — `Scripts/notarize.sh` does the Developer-ID sign + hardened runtime +
+`notarytool` submit + staple:
+
+```bash
+DEV_ID="Developer ID Application: Your Name (TEAMID)" \
+APPLE_ID="you@example.com" TEAM_ID="TEAMID" APP_PW="app-specific-password" \
+./Scripts/notarize.sh        # then ./Scripts/release.sh to wrap it in a .dmg
 ```

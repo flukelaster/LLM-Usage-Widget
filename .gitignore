@@ -6,6 +6,9 @@ Package.resolved
 # Packaged app bundle (produced by Scripts/package_app.sh)
 *.app/
 
+# Release artifacts (produced by Scripts/release.sh)
+dist/
+
 # macOS
 .DS_Store
 

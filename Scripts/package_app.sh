@@ -21,9 +21,10 @@ CONFIG="${1:-debug}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT}"
 
+# NOTE: native arch only (arm64 on Apple Silicon). A universal arm64+x86_64 build needs `xcbuild`,
+# which ships with full Xcode — not the Command Line Tools — so it's unavailable here.
 echo "==> Building (${CONFIG})..."
 swift build -c "${CONFIG}" --product "${APP_NAME}"
-
 BIN_DIR="$(swift build -c "${CONFIG}" --show-bin-path)"
 BIN_PATH="${BIN_DIR}/${APP_NAME}"
 
