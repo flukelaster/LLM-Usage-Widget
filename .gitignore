@@ -1,0 +1,15 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Packaged app bundle (produced by Scripts/package_app.sh)
+*.app/
+
+# macOS
+.DS_Store
+
+# Xcode (if ever added)
+*.xcuserstate
+xcuserdata/
+DerivedData/
