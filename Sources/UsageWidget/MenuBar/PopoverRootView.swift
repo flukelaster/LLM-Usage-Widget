@@ -10,23 +10,24 @@ struct PopoverRootView: View {
         VStack(spacing: 0) {
             header
             Divider().overlay(Theme.separator)
-            ScrollView {
-                VStack(spacing: Theme.Space.cardGap) {
-                    if store.enabledProviders.isEmpty {
-                        EmptyStateView()
-                    } else {
-                        ForEach(store.enabledProviders, id: \.id) { provider in
-                            ProviderCard(provider: provider)
-                        }
+            // Plain VStack (not ScrollView): a greedy ScrollView collapses to zero height inside a
+            // content-sized MenuBarExtra(.window) popover, hiding the cards. With a handful of
+            // providers the popover simply grows to fit. (Re-add a measured-height scroll if the
+            // provider list ever gets long.)
+            VStack(spacing: Theme.Space.cardGap) {
+                if store.enabledProviders.isEmpty {
+                    EmptyStateView()
+                } else {
+                    ForEach(store.enabledProviders, id: \.id) { provider in
+                        ProviderCard(provider: provider)
                     }
                 }
-                .padding(Theme.Space.popover)
             }
+            .padding(Theme.Space.popover)
             Divider().overlay(Theme.separator)
             footer
         }
         .frame(width: Theme.popoverWidth)
-        .frame(maxHeight: 560)
         .background(.ultraThinMaterial)
         .task { await store.refreshOnOpen() }
     }
