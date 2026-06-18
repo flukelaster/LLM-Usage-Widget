@@ -3,6 +3,8 @@
 A native macOS **menu bar** app that shows **real-time usage limits** for your main LLM tools —
 **Claude**, **Codex**, and **GitHub Copilot** — the way Claude Desktop surfaces your usage windows.
 
+**[⬇︎ Download the latest .dmg](https://github.com/flukelaster/LLM-Usage-Widget/releases/latest)** — macOS 14+ (Apple Silicon). First launch: right-click → Open (ad-hoc signed; see [Distribution](#distribution)).
+
 Click the menu-bar gauge to see, per provider:
 
 - A big **5-hour** and **weekly** usage bar with **% used** and a **reset countdown**
