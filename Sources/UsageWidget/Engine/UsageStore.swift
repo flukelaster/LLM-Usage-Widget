@@ -35,6 +35,7 @@ final class UsageStore {
     @ObservationIgnored private var backoff: [ProviderID: BackoffPolicy] = [:]
     @ObservationIgnored private var nextDelayOverride: [ProviderID: TimeInterval] = [:]
     @ObservationIgnored private var didStart = false
+    @ObservationIgnored private let notifier = UsageNotifier()
 
     init(providers: [any UsageProvider], cache: SnapshotCache, settings: SettingsModel) {
         self.providers = providers
@@ -85,6 +86,9 @@ final class UsageStore {
             states[provider.id, default: ProviderState()].authState = auth
         }
         reschedule()
+        if settings.notificationsEnabled {
+            await notifier.requestAuthorizationIfNeeded()
+        }
     }
 
     /// Start/stop loops to match the currently-enabled, signed-in providers.
@@ -106,6 +110,11 @@ final class UsageStore {
 
     func stop() {
         scheduler.stopAll()
+    }
+
+    /// Prompt for notification permission (called when the user enables notifications).
+    func requestNotificationAuthorization() async {
+        await notifier.requestAuthorizationIfNeeded()
     }
 
     // MARK: - Polling
@@ -152,6 +161,9 @@ final class UsageStore {
             nextDelayOverride[id] = nil
             lastGlobalRefresh = Date()
             await persist()
+            if settings.notificationsEnabled {
+                notifier.evaluate(providerID: id, providerName: provider.displayName, usage: usage)
+            }
         } catch let error as ProviderError {
             handle(error, for: id)
         } catch {

@@ -24,6 +24,8 @@ final class SettingsModel {
     var enabledProviders: Set<ProviderID>
     var pollIntervalSeconds: Int
     var menuBarDisplay: MenuBarDisplay
+    /// Notify when a usage window crosses ~90%.
+    var notificationsEnabled: Bool
 
     @ObservationIgnored private let defaults: UserDefaults
 
@@ -31,6 +33,7 @@ final class SettingsModel {
         static let enabled = "enabledProviders"
         static let interval = "pollIntervalSeconds"
         static let display = "menuBarDisplay"
+        static let notifications = "notificationsEnabled"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -44,6 +47,7 @@ final class SettingsModel {
         let storedInterval = defaults.integer(forKey: Key.interval)
         self.pollIntervalSeconds = storedInterval > 0 ? storedInterval : 300
         self.menuBarDisplay = (defaults.string(forKey: Key.display)).flatMap(MenuBarDisplay.init(rawValue:)) ?? .iconAndPercent
+        self.notificationsEnabled = (defaults.object(forKey: Key.notifications) as? Bool) ?? true
     }
 
     func isEnabled(_ id: ProviderID) -> Bool { enabledProviders.contains(id) }
@@ -57,5 +61,6 @@ final class SettingsModel {
         defaults.set(enabledProviders.map(\.rawValue), forKey: Key.enabled)
         defaults.set(pollIntervalSeconds, forKey: Key.interval)
         defaults.set(menuBarDisplay.rawValue, forKey: Key.display)
+        defaults.set(notificationsEnabled, forKey: Key.notifications)
     }
 }

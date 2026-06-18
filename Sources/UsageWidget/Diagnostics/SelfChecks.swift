@@ -143,6 +143,17 @@ func runSelfChecks() -> Int {
     check("number 4.1K", NumberFormat.compact(4_120) == "4.1K")
     check("currency", NumberFormat.currency(12.5) == "$12.50")
 
+    print("== Notifications ==")
+    let notifier = UsageNotifier()
+    func claudeUsage(_ five: Double, reset: Date) -> ProviderUsage {
+        ProviderUsage(providerID: .claude, windows: [LimitWindow(kind: .fiveHour, utilization: five, resetsAt: reset)])
+    }
+    let resetA = Date(timeIntervalSince1970: 2_000_000_000)
+    check("notify fires at 95%", notifier.windowsToNotify(providerID: .claude, usage: claudeUsage(0.95, reset: resetA)).count == 1)
+    check("no re-notify same cycle", notifier.windowsToNotify(providerID: .claude, usage: claudeUsage(0.96, reset: resetA)).isEmpty)
+    check("clears under threshold", notifier.windowsToNotify(providerID: .claude, usage: claudeUsage(0.50, reset: resetA)).isEmpty)
+    check("re-notifies after reset rolls over", notifier.windowsToNotify(providerID: .claude, usage: claudeUsage(0.97, reset: resetA.addingTimeInterval(604_800))).count == 1)
+
     print(failures == 0 ? "\nAll checks passed." : "\n\(failures) check(s) FAILED.")
     return failures
 }

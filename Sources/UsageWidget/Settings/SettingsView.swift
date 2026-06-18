@@ -18,6 +18,7 @@ struct SettingsView: View {
 
 private struct GeneralSettingsTab: View {
     @Environment(SettingsModel.self) private var settings
+    @Environment(UsageStore.self) private var store
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var launchError: String?
 
@@ -42,6 +43,12 @@ private struct GeneralSettingsTab: View {
                 .foregroundStyle(.secondary)
 
             Divider()
+
+            Toggle("Notify when usage exceeds 90%", isOn: $settings.notificationsEnabled)
+                .onChange(of: settings.notificationsEnabled) { _, isOn in
+                    settings.save()
+                    if isOn { Task { await store.requestNotificationAuthorization() } }
+                }
 
             Toggle("Launch at login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, newValue in
