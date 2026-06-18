@@ -36,9 +36,7 @@ struct ProviderCard: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            Image(systemName: provider.iconSystemName)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(accent)
+            ProviderIcon(providerID: provider.id, accent: accent, size: 16)
                 .frame(width: 18)
             Text(provider.displayName)
                 .font(.system(size: 13, weight: .semibold))

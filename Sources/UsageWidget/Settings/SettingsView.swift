@@ -82,8 +82,7 @@ private struct ProvidersSettingsTab: View {
         let state = store.state(for: provider.id)
         let signedIn = state.authState == .signedIn
         return HStack(spacing: 10) {
-            Image(systemName: provider.iconSystemName)
-                .foregroundStyle(Color(hex: provider.accentHex))
+            ProviderIcon(providerID: provider.id, accent: Color(hex: provider.accentHex), size: 17)
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 1) {
                 Text(provider.displayName)
