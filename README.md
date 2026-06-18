@@ -9,6 +9,7 @@ Click the menu-bar gauge to see, per provider:
 - Threshold colors: green &lt; 60%, amber 60–85%, red &gt; 85%
 - Plan badge (Max / Pro / Plus …) and an "up to date / rate-limited / stale" status
 - A live **% in the menu bar** itself (the most-constrained window across providers)
+- A **notification** when any window crosses 90% (once per window per reset cycle)
 
 Sign-in is **in-app OAuth** (PKCE). Tokens are stored only in your macOS Keychain.
 
@@ -35,8 +36,11 @@ Open the popover and click **Sign in** on a provider card:
 - **Claude** opens your browser to Anthropic, which shows a code (`abc123#xyz`). Paste it back into
   the card. (Anthropic rejects arbitrary loopback redirects, so this paste step is required.)
 
-Manage providers (enable/disable, sign out), poll interval, menu-bar display, and **Launch at
-login** from **Settings** (footer of the popover).
+Manage providers (enable/disable, sign out), poll interval, menu-bar display, **near-limit
+notifications**, and **Launch at login** from **Settings** (footer of the popover).
+
+Regenerate the app icon after design tweaks with `./Scripts/make_icon.sh` (renders the SwiftUI
+icon → `Resources/AppIcon.icns`).
 
 ## Verification
 
