@@ -58,6 +58,17 @@ final class UsageStore {
             .max() ?? 0
     }
 
+    /// The signed-in provider closest to a limit, with its peak fraction. Drives the menu-bar
+    /// "closest to full" display. `nil` when no provider has data yet.
+    var peakProvider: (id: ProviderID, fraction: Double)? {
+        var best: (ProviderID, Double)?
+        for provider in enabledProviders {
+            guard let fraction = states[provider.id]?.usage?.maxUtilization else { continue }
+            if best == nil || fraction > best!.1 { best = (provider.id, fraction) }
+        }
+        return best.map { (id: $0.0, fraction: $0.1) }
+    }
+
     var hasAnyData: Bool { states.values.contains { $0.usage != nil } }
     var anySignedIn: Bool { states.values.contains { $0.authState == .signedIn } }
     var anyEnabledSignedIn: Bool {

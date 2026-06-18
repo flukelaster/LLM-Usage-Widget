@@ -8,16 +8,19 @@ import Observation
 @Observable
 final class SettingsModel {
     enum MenuBarDisplay: String, CaseIterable, Codable, Sendable, Identifiable {
+        /// Brand icon of the provider closest to a limit + its %. (Default — answers "whose 94%?")
+        case peakProvider
+        /// Gauge icon + the closest-to-full %, no brand icon.
+        case peakPercent
+        /// Gauge icon only.
         case iconOnly
-        case iconAndPercent
-        case compact
 
         var id: String { rawValue }
         var title: String {
             switch self {
+            case .peakProvider: return "Closest to full — icon + %"
+            case .peakPercent: return "Closest to full — % only"
             case .iconOnly: return "Icon only"
-            case .iconAndPercent: return "Icon + percentage"
-            case .compact: return "Per provider"
             }
         }
     }
@@ -45,7 +48,7 @@ final class SettingsModel {
         self.disabledProviders = Set(storedDisabled.map { ProviderID(rawValue: $0) })
         let storedInterval = defaults.integer(forKey: Key.interval)
         self.pollIntervalSeconds = storedInterval > 0 ? storedInterval : 300
-        self.menuBarDisplay = (defaults.string(forKey: Key.display)).flatMap(MenuBarDisplay.init(rawValue:)) ?? .iconAndPercent
+        self.menuBarDisplay = (defaults.string(forKey: Key.display)).flatMap(MenuBarDisplay.init(rawValue:)) ?? .peakProvider
         self.notificationsEnabled = (defaults.object(forKey: Key.notifications) as? Bool) ?? true
     }
 

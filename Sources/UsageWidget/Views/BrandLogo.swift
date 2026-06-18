@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// Brand logo path data from thesvg.org (viewBox 0 0 24 24).
 enum BrandLogo {
@@ -46,5 +47,38 @@ struct ProviderIcon: View {
             }
         }
         .frame(width: size, height: size)
+    }
+}
+
+/// Rasterizes a provider's brand mark to a **template `NSImage`** so it can render in the menu bar.
+/// (SwiftUI Shapes don't render directly in a `MenuBarExtra` label, and the menu bar forces
+/// monochrome — a template image is exactly how SF Symbols / custom status icons work.)
+@MainActor
+enum BrandMenuBarIcon {
+    private static var cache: [ProviderID: NSImage] = [:]
+
+    static func templateImage(for id: ProviderID, size: CGFloat = 16) -> NSImage? {
+        if let cached = cache[id] { return cached }
+        guard let info = info(for: id) else { return nil }
+        let renderer = ImageRenderer(
+            content: BrandLogoShape(pathData: info.path, viewBox: info.viewBox)
+                .fill(Color.black, style: FillStyle(eoFill: info.eoFill))
+                .frame(width: size, height: size)
+        )
+        renderer.scale = 2
+        guard let image = renderer.nsImage else { return nil }
+        image.isTemplate = true                       // menu bar tints it like an SF Symbol
+        image.size = NSSize(width: size, height: size)
+        cache[id] = image
+        return image
+    }
+
+    private static func info(for id: ProviderID) -> (path: String, viewBox: CGSize, eoFill: Bool)? {
+        switch id {
+        case .claude: return (BrandLogo.claude, CGSize(width: 24, height: 24), false)
+        case .codex: return (BrandLogo.codex, CGSize(width: 24, height: 24), true)
+        case .copilot: return (BrandLogo.copilot, CGSize(width: 256, height: 208), false)
+        default: return nil
+        }
     }
 }
