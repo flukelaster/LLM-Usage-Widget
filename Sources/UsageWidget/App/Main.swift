@@ -11,6 +11,10 @@ enum AppMain {
             let failures = MainActor.assumeIsolated { runSelfChecks() }
             exit(failures == 0 ? 0 : 1)
         }
+        if let index = args.firstIndex(of: "--icon"), index + 1 < args.count {
+            MainActor.assumeIsolated { IconRenderer.renderSync(outputPath: args[index + 1]) }
+            return
+        }
         if let index = args.firstIndex(of: "--snapshot-states"), index + 1 < args.count {
             MainActor.assumeIsolated {
                 SnapshotRunner.renderStatesSync(outputPath: args[index + 1])
