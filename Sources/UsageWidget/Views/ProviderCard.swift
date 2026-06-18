@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// One provider's card: header (icon · name · plan · status) and the hero limit-window bars,
 /// with every state handled — signed-out, paste-code sign-in, loading, loaded, rate-limited,
@@ -12,6 +13,11 @@ struct ProviderCard: View {
     @State private var pendingInstructions = ""
     @State private var codeInput = ""
     @State private var authError: String?
+    // Device-flow (Copilot) sign-in state.
+    @State private var deviceUserCode: String?
+    @State private var deviceInstructions = ""
+    @State private var deviceURL: URL?
+    @State private var deviceTask: Task<Void, Never>?
 
     private var accent: Color { Color(hex: provider.accentHex) }
     private var state: UsageStore.ProviderState { store.state(for: provider.id) }
@@ -145,7 +151,9 @@ struct ProviderCard: View {
     // MARK: - Sign-in
 
     @ViewBuilder private var signInView: some View {
-        if let _ = pendingSubmit {
+        if deviceUserCode != nil {
+            deviceCodeView
+        } else if pendingSubmit != nil {
             pasteCodeView
         } else {
             VStack(alignment: .leading, spacing: 8) {
@@ -211,6 +219,56 @@ struct ProviderCard: View {
         }
     }
 
+    private var deviceCodeView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(deviceInstructions)
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                Text(deviceUserCode ?? "")
+                    .font(.system(size: 18, weight: .bold, design: .monospaced))
+                    .tracking(2)
+                    .foregroundStyle(Theme.textPrimary)
+                    .textSelection(.enabled)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Color.white.opacity(0.08)))
+                Button {
+                    if let code = deviceUserCode {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(code, forType: .string)
+                    }
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Theme.textSecondary)
+                .help("Copy code")
+                ProgressView().controlSize(.small).scaleEffect(0.8)
+            }
+            HStack(spacing: 12) {
+                Button("Open verification page") {
+                    if let url = deviceURL { NSWorkspace.shared.open(url) }
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 10))
+                .foregroundStyle(accent)
+                Button("Cancel") {
+                    deviceTask?.cancel()
+                    deviceUserCode = nil
+                    isAuthenticating = false
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textTertiary)
+            }
+            if let authError {
+                Text(authError).font(.system(size: 10)).foregroundStyle(Theme.high)
+            }
+        }
+    }
+
     // MARK: - Actions
 
     private func authenticate() {
@@ -225,11 +283,30 @@ struct ProviderCard: View {
                 case .needsCode(let instructions, let submit):
                     pendingInstructions = instructions
                     pendingSubmit = submit
+                case .deviceCode(let userCode, let url, let instructions, let poll):
+                    deviceUserCode = userCode
+                    deviceURL = url
+                    deviceInstructions = instructions
+                    startDevicePolling(poll)
                 }
             } catch {
                 authError = friendly(error)
             }
             isAuthenticating = false
+        }
+    }
+
+    private func startDevicePolling(_ poll: @escaping @Sendable () async throws -> Void) {
+        deviceTask?.cancel()
+        deviceTask = Task {
+            do {
+                try await poll()
+                deviceUserCode = nil
+                await store.finishSignIn(provider.id)
+            } catch {
+                if !Task.isCancelled { authError = friendly(error) }
+                deviceUserCode = nil
+            }
         }
     }
 

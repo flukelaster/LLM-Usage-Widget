@@ -8,4 +8,5 @@ struct ProviderID: RawRepresentable, Hashable, Codable, Sendable {
 
     static let claude = ProviderID(rawValue: "claude")
     static let codex = ProviderID(rawValue: "codex")
+    static let copilot = ProviderID(rawValue: "copilot")
 }

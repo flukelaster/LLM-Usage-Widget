@@ -75,6 +75,23 @@ func runSelfChecks() -> Int {
     checkThrows("codex empty {} throws") { _ = try CodexUsageFetcher.parse(Data("{}".utf8), planFallback: nil) }
     checkThrows("claude empty {} throws") { _ = try ClaudeUsageFetcher.parse(Data("{}".utf8)) }
 
+    do {
+        let json = """
+        {"copilot_plan":"individual_pro_plus","quota_reset_date_utc":"2026-02-01T00:00:00.000Z",
+         "quota_snapshots":{"premium_interactions":{"entitlement":1500,"remaining":1327,"percent_remaining":88.5,"unlimited":false}}}
+        """
+        let usage = try CopilotUsageFetcher.parse(Data(json.utf8))
+        let w = usage.heroWindows.first
+        check("copilot premium = 12%", w?.percent == 12)
+        check("copilot plan = Pro+", usage.plan?.displayName == "Pro+")
+        check("copilot count = 173 / 1.5K", w?.countText == "173 / 1.5K")
+        check("copilot monthly kind", w?.kind == .monthly)
+    } catch { check("copilot parse threw", false) }
+    do {
+        let usage = try CopilotUsageFetcher.parse(Data(#"{"copilot_plan":"business","quota_snapshots":{"premium_interactions":{"unlimited":true}}}"#.utf8))
+        check("copilot unlimited flagged", usage.heroWindows.first?.unlimited == true)
+    } catch { check("copilot unlimited threw", false) }
+
     print("== Auth (PKCE / JWT / URLs) ==")
     let pkce = PKCE.generate()
     check("pkce verifier length=43", pkce.verifier.count == 43)

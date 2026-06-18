@@ -30,6 +30,15 @@ enum SnapshotRunner {
             ],
             capturedAt: now.addingTimeInterval(-30)
         ))
+        store.seed(ProviderUsage(
+            providerID: .copilot,
+            plan: PlanInfo.from(rawPlanType: "individual_pro_plus"),
+            windows: [
+                LimitWindow(kind: .monthly, utilization: 0.115, resetsAt: now.addingTimeInterval(11 * 86400),
+                            label: "Premium requests", used: 173, limit: 1500)
+            ],
+            capturedAt: now.addingTimeInterval(-120)
+        ))
         write(popover(store: store, settings: settings), to: outputPath)
     }
 
@@ -59,7 +68,8 @@ enum SnapshotRunner {
         let settings = SettingsModel()
         let providers: [any UsageProvider] = [
             MockProvider(id: .claude, displayName: "Claude", iconSystemName: "sparkle", accentHex: "#D97757"),
-            MockProvider(id: .codex, displayName: "Codex", iconSystemName: "chevron.left.forwardslash.chevron.right", accentHex: "#10A37F")
+            MockProvider(id: .codex, displayName: "Codex", iconSystemName: "chevron.left.forwardslash.chevron.right", accentHex: "#10A37F"),
+            MockProvider(id: .copilot, displayName: "Copilot", iconSystemName: "cpu", accentHex: "#A78BFA")
         ]
         let store = UsageStore(providers: providers, cache: SnapshotCache(filename: "snapshot-preview.json"), settings: settings)
         return (store, settings)

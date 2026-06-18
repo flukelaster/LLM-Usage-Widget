@@ -1,7 +1,7 @@
 # LLM Usage Widget
 
-A native macOS **menu bar** app that shows **real-time usage limits** for your main LLM CLIs —
-**Claude** and **Codex** — the way Claude Desktop surfaces your 5-hour and weekly windows.
+A native macOS **menu bar** app that shows **real-time usage limits** for your main LLM tools —
+**Claude**, **Codex**, and **GitHub Copilot** — the way Claude Desktop surfaces your usage windows.
 
 Click the menu-bar gauge to see, per provider:
 
@@ -35,6 +35,8 @@ Open the popover and click **Sign in** on a provider card:
   redirect automatically — nothing to paste.
 - **Claude** opens your browser to Anthropic, which shows a code (`abc123#xyz`). Paste it back into
   the card. (Anthropic rejects arbitrary loopback redirects, so this paste step is required.)
+- **Copilot** uses GitHub's device flow: the card shows a short code; enter it at
+  `github.com/login/device` (opened for you) and the app finishes automatically.
 
 Manage providers (enable/disable, sign out), poll interval, menu-bar display, **near-limit
 notifications**, and **Launch at login** from **Settings** (footer of the popover).
@@ -59,6 +61,11 @@ swift build                                   # compile
 |---|---|---|
 | Claude | `GET api.anthropic.com/api/oauth/usage` | The endpoint Claude Code's `/usage` uses. Requires `anthropic-beta` + `claude-code/<ver>` User-Agent. Rate-limits hard → polled ≥ 5 min with exponential backoff. |
 | Codex | `GET chatgpt.com/backend-api/wham/usage` | Returns primary (5h) + secondary (weekly) windows. |
+| Copilot | `GET api.github.com/copilot_internal/user` | Monthly premium-request quota (`quota_snapshots`) + reset date. |
+
+Gemini and Cursor were evaluated but deferred: Gemini's individual CLI usage API is mid-migration
+to Antigravity, and Cursor requires reading the editor's local SQLite with full-disk access and has
+no per-user official API.
 
 The last-good snapshot is cached to `~/Library/Application Support/com.flukelaster.usagewidget/`,
 so the popover shows data instantly and never blanks out on a failed refresh.

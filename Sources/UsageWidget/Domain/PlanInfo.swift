@@ -21,6 +21,10 @@ struct PlanInfo: Hashable, Codable, Sendable {
         case "team": pretty = "Team"
         case "enterprise", "ent": pretty = "Enterprise"
         case "max", "max_5x", "max_20x", "max5x", "max20x": pretty = "Max"
+        case "individual_pro_plus", "pro_plus": pretty = "Pro+"
+        case "individual_pro": pretty = "Pro"
+        case "individual": pretty = "Individual"
+        case "business": pretty = "Business"
         default: pretty = raw.replacingOccurrences(of: "_", with: " ").capitalized
         }
         return PlanInfo(displayName: pretty, rawValue: raw)

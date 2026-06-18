@@ -2,7 +2,8 @@ import Foundation
 import Observation
 
 /// User-facing settings, persisted to `UserDefaults`. `@Observable` so the UI and the menu-bar
-/// label react to changes. Per-provider minimum poll intervals still apply (Claude is clamped up).
+/// label react to changes. Providers are enabled-by-default: we store the *disabled* set, so a
+/// newly-added provider shows up automatically instead of being hidden by an old persisted list.
 @MainActor
 @Observable
 final class SettingsModel {
@@ -21,7 +22,9 @@ final class SettingsModel {
         }
     }
 
-    var enabledProviders: Set<ProviderID>
+    /// Providers the user has explicitly turned off (everything else is enabled).
+    var disabledProviders: Set<ProviderID>
+    /// Global poll cadence; per-provider minimums still apply (Claude is clamped up).
     var pollIntervalSeconds: Int
     var menuBarDisplay: MenuBarDisplay
     /// Notify when a usage window crosses ~90%.
@@ -30,7 +33,7 @@ final class SettingsModel {
     @ObservationIgnored private let defaults: UserDefaults
 
     private enum Key {
-        static let enabled = "enabledProviders"
+        static let disabled = "disabledProviders"
         static let interval = "pollIntervalSeconds"
         static let display = "menuBarDisplay"
         static let notifications = "notificationsEnabled"
@@ -38,27 +41,23 @@ final class SettingsModel {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-
-        if let stored = defaults.array(forKey: Key.enabled) as? [String], !stored.isEmpty {
-            self.enabledProviders = Set(stored.map { ProviderID(rawValue: $0) })
-        } else {
-            self.enabledProviders = [.claude, .codex]
-        }
+        let storedDisabled = (defaults.array(forKey: Key.disabled) as? [String]) ?? []
+        self.disabledProviders = Set(storedDisabled.map { ProviderID(rawValue: $0) })
         let storedInterval = defaults.integer(forKey: Key.interval)
         self.pollIntervalSeconds = storedInterval > 0 ? storedInterval : 300
         self.menuBarDisplay = (defaults.string(forKey: Key.display)).flatMap(MenuBarDisplay.init(rawValue:)) ?? .iconAndPercent
         self.notificationsEnabled = (defaults.object(forKey: Key.notifications) as? Bool) ?? true
     }
 
-    func isEnabled(_ id: ProviderID) -> Bool { enabledProviders.contains(id) }
+    func isEnabled(_ id: ProviderID) -> Bool { !disabledProviders.contains(id) }
 
     func setEnabled(_ enabled: Bool, for id: ProviderID) {
-        if enabled { enabledProviders.insert(id) } else { enabledProviders.remove(id) }
+        if enabled { disabledProviders.remove(id) } else { disabledProviders.insert(id) }
         save()
     }
 
     func save() {
-        defaults.set(enabledProviders.map(\.rawValue), forKey: Key.enabled)
+        defaults.set(disabledProviders.map(\.rawValue), forKey: Key.disabled)
         defaults.set(pollIntervalSeconds, forKey: Key.interval)
         defaults.set(menuBarDisplay.rawValue, forKey: Key.display)
         defaults.set(notificationsEnabled, forKey: Key.notifications)

@@ -20,7 +20,8 @@ final class AppEnvironment {
         let tokens = TokenStore()
         let providers: [any UsageProvider] = [
             ClaudeProvider(tokens: tokens),
-            CodexProvider(tokens: tokens)
+            CodexProvider(tokens: tokens),
+            CopilotProvider(tokens: tokens)
         ]
         let store = UsageStore(providers: providers, cache: cache, settings: settings)
         return AppEnvironment(settings: settings, store: store)

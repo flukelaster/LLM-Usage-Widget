@@ -21,6 +21,9 @@ enum SignInContinuation: Sendable {
     case completed
     /// The browser is showing a code the user must paste back. Call `submit(code)` to finish.
     case needsCode(instructions: String, submit: @Sendable (String) async throws -> Void)
+    /// Device flow: show `userCode` for the user to enter at `verificationURL`, then await `poll`
+    /// (which resolves when the user authorizes). Used by GitHub Copilot.
+    case deviceCode(userCode: String, verificationURL: URL, instructions: String, poll: @Sendable () async throws -> Void)
 }
 
 enum ProviderAuthState: Sendable, Equatable {
