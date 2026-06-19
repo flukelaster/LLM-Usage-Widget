@@ -34,6 +34,7 @@ struct PopoverRootView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
+            ClaudeMascotView()
             Text("LLM Usage")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)

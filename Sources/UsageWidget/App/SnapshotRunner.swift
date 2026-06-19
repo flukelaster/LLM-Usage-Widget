@@ -78,6 +78,7 @@ enum SnapshotRunner {
     private static func popover(store: UsageStore, settings: SettingsModel) -> some View {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
+                ClaudeMascotView()
                 Text("LLM Usage").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Text("updated 1m ago").font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
