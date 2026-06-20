@@ -31,7 +31,8 @@
 
                 <!-- Card header -->
                 <Grid ColumnDefinitions="Auto,Auto,*,Auto" VerticalAlignment="Center">
-                  <Ellipse Width="14" Height="14" Fill="{Binding Accent}" VerticalAlignment="Center"/>
+                  <Path Data="{Binding Logo}" Fill="{Binding Accent}" Stretch="Uniform"
+                        Width="16" Height="16" VerticalAlignment="Center"/>
                   <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="9,0,0,0"
                              FontSize="15" FontWeight="SemiBold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
                   <Border Grid.Column="2" IsVisible="{Binding HasPlan}" Margin="9,0,0,0"

@@ -18,12 +18,16 @@ public partial class ProviderCardViewModel : ObservableObject
     [ObservableProperty] private IBrush _statusBrush = Palette.Safe;
 
     public bool HasPlan => !string.IsNullOrEmpty(Plan);
+    public Geometry? Logo { get; set; }
     public ObservableCollection<WindowRowViewModel> Windows { get; } = new();
 
     public static ProviderCardViewModel From(ProviderUsage usage, DateTimeOffset now)
     {
         var (name, accent) = Palette.Meta(usage.ProviderId);
-        var vm = new ProviderCardViewModel { Name = name, Accent = accent, Plan = usage.Plan?.DisplayName };
+        var vm = new ProviderCardViewModel
+        {
+            Name = name, Accent = accent, Plan = usage.Plan?.DisplayName, Logo = BrandLogo.For(usage.ProviderId),
+        };
         foreach (var w in usage.HeroWindows)
             vm.Windows.Add(WindowRowViewModel.From(w, now));
         return vm;
@@ -33,7 +37,10 @@ public partial class ProviderCardViewModel : ObservableObject
     public static ProviderCardViewModel FromState(IUsageProvider provider, UsageStore.ProviderState state, DateTimeOffset now)
     {
         var (name, accent) = Palette.Meta(provider.Id);
-        var vm = new ProviderCardViewModel { Name = name, Accent = accent, Plan = state.Usage?.Plan?.DisplayName };
+        var vm = new ProviderCardViewModel
+        {
+            Name = name, Accent = accent, Plan = state.Usage?.Plan?.DisplayName, Logo = BrandLogo.For(provider.Id),
+        };
         (vm.Status, vm.StatusBrush) = StatusFor(state);
         if (state.Usage is { } usage)
             foreach (var w in usage.HeroWindows)
