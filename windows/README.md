@@ -53,6 +53,16 @@ a clean Windows machine with nothing pre-installed.
 > cross-builds from macOS/Linux too, but that build targets plain `net10.0`, where those two features
 > compile out to no-ops.
 
+## Continuous integration
+
+[`.github/workflows/windows-release.yml`](../.github/workflows/windows-release.yml) builds the `.exe`
+on a **Windows runner** (so the native toast + launch-at-login are compiled in):
+
+- **Publish a GitHub Release** → the workflow runs the tests, publishes the self-contained `.exe`,
+  and **attaches it to that release** as `LLM-Usage-Widget-windows-x64.exe`.
+- **Run it manually** (Actions → *Windows build* → *Run workflow*) → the `.exe` is uploaded as a
+  downloadable build artifact, handy for testing without cutting a release.
+
 ## How auth & storage map to Windows
 
 | Concern | Implementation |
