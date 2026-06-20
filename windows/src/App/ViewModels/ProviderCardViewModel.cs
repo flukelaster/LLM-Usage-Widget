@@ -3,6 +3,8 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using LLMUsageWidget.App.Theming;
 using LLMUsageWidget.Core.Domain;
+using LLMUsageWidget.Core.Engine;
+using LLMUsageWidget.Core.Providers;
 
 namespace LLMUsageWidget.App.ViewModels;
 
@@ -25,5 +27,26 @@ public partial class ProviderCardViewModel : ObservableObject
         foreach (var w in usage.HeroWindows)
             vm.Windows.Add(WindowRowViewModel.From(w, now));
         return vm;
+    }
+
+    /// <summary>Build a card from live engine state — including signed-out / loading / error states.</summary>
+    public static ProviderCardViewModel FromState(IUsageProvider provider, UsageStore.ProviderState state, DateTimeOffset now)
+    {
+        var (name, accent) = Palette.Meta(provider.Id);
+        var vm = new ProviderCardViewModel { Name = name, Accent = accent, Plan = state.Usage?.Plan?.DisplayName };
+        (vm.Status, vm.StatusBrush) = StatusFor(state);
+        if (state.Usage is { } usage)
+            foreach (var w in usage.HeroWindows)
+                vm.Windows.Add(WindowRowViewModel.From(w, now));
+        return vm;
+    }
+
+    private static (string Text, IBrush Brush) StatusFor(UsageStore.ProviderState s)
+    {
+        if (s.Auth == ProviderAuthState.SignedOut) return ("Signed out", Palette.TextTertiary);
+        if (s.Error is { } e)
+            return e.Kind == ProviderErrorKind.RateLimited ? ("Rate-limited", Palette.Warn) : ("Stale", Palette.Warn);
+        if (s.Usage is null) return ("Loading…", Palette.TextSecondary);
+        return ("Up to date", Palette.Safe);
     }
 }

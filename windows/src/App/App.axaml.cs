@@ -4,14 +4,15 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using LLMUsageWidget.App.Theming;
 using LLMUsageWidget.App.Views;
+using LLMUsageWidget.Core.Domain;
 
 namespace LLMUsageWidget.App;
 
 public partial class App : Application
 {
+    private AppHost? _host;
     private PopoverWindow? _popover;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -23,10 +24,12 @@ public partial class App : Application
             // Tray-only app: no main window, runs until the user quits.
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            _popover = new PopoverWindow { DataContext = MockData.Popover() };
+            _host = new AppHost();
+            _popover = new PopoverWindow { DataContext = _host.Popover };
             _popover.Deactivated += (_, _) => _popover?.Hide();
 
             TrySetupTray(desktop);
+            _host.Start();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -37,11 +40,16 @@ public partial class App : Application
         try
         {
             var menu = new NativeMenu();
-            var settings = new NativeMenuItem("Settings");
+
+            var refresh = new NativeMenuItem("Refresh now");
+            refresh.Click += (_, _) => { if (_host is not null) _ = _host.RefreshNowAsync(); };
+            menu.Items.Add(refresh);
+
+            menu.Items.Add(BuildAccountsMenu());
+            menu.Items.Add(new NativeMenuItemSeparator());
+
             var quit = new NativeMenuItem("Quit");
             quit.Click += (_, _) => desktop.Shutdown();
-            menu.Items.Add(settings);
-            menu.Items.Add(new NativeMenuItemSeparator());
             menu.Items.Add(quit);
 
             var tray = new TrayIcon { ToolTipText = "LLM Usage", Icon = BuildTrayIcon(), Menu = menu };
@@ -53,6 +61,25 @@ public partial class App : Application
         {
             // Tray is best-effort (e.g. headless / unsupported session) — the app still runs.
         }
+    }
+
+    private NativeMenuItem BuildAccountsMenu()
+    {
+        var accounts = new NativeMenuItem("Accounts") { Menu = new NativeMenu() };
+        if (_host is null) return accounts;
+
+        foreach (var provider in _host.Store.Providers)
+        {
+            var id = provider.Id;
+            var signIn = new NativeMenuItem($"Sign in {provider.DisplayName}");
+            signIn.Click += (_, _) => { if (_host is not null) _ = _host.SignInAsync(id); };
+            accounts.Menu!.Items.Add(signIn);
+
+            var signOut = new NativeMenuItem($"Sign out {provider.DisplayName}");
+            signOut.Click += (_, _) => { if (_host is not null) _ = _host.SignOutAsync(id); };
+            accounts.Menu!.Items.Add(signOut);
+        }
+        return accounts;
     }
 
     private void TogglePopover()
@@ -69,7 +96,9 @@ public partial class App : Application
         {
             var area = screen.WorkingArea;
             int width = (int)(340 * screen.Scaling);
-            _popover.Position = new PixelPoint(area.X + area.Width - width - (int)(12 * screen.Scaling), area.Y + (int)(8 * screen.Scaling));
+            _popover.Position = new PixelPoint(
+                area.X + area.Width - width - (int)(12 * screen.Scaling),
+                area.Y + (int)(8 * screen.Scaling));
         }
         _popover.Show();
         _popover.Activate();
