@@ -2,7 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Threading;
+using LLMUsageWidget.App.ViewModels;
 using LLMUsageWidget.App.Views;
+using LLMUsageWidget.Core.Settings;
 
 namespace LLMUsageWidget.App;
 
@@ -11,7 +13,17 @@ namespace LLMUsageWidget.App;
 /// windowing system or run loop required).</summary>
 public static class Snapshot
 {
-    public static int Run(string path)
+    public static int Run(string path) => Capture(path, () => new Window
+    {
+        Content = new PopoverView { DataContext = MockData.Popover() },
+        SizeToContent = SizeToContent.WidthAndHeight,
+        ShowInTaskbar = false,
+    });
+
+    public static int RunSettings(string path) => Capture(path, () =>
+        new SettingsWindow { DataContext = new SettingsViewModel(new SettingsModel(), () => { }) });
+
+    private static int Capture(string path, Func<Window> makeWindow)
     {
         try
         {
@@ -23,13 +35,7 @@ public static class Snapshot
 
             return Dispatcher.UIThread.Invoke(() =>
             {
-                var view = new PopoverView { DataContext = MockData.Popover() };
-                var window = new Window
-                {
-                    Content = view,
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    ShowInTaskbar = false,
-                };
+                var window = makeWindow();
                 window.Show();
                 Dispatcher.UIThread.RunJobs();
 

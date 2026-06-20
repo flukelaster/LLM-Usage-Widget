@@ -14,6 +14,7 @@ public partial class App : Application
 {
     private AppHost? _host;
     private PopoverWindow? _popover;
+    private TrayIcon? _tray;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -27,6 +28,7 @@ public partial class App : Application
             _host = new AppHost();
             _popover = new PopoverWindow { DataContext = _host.Popover };
             _popover.Deactivated += (_, _) => _popover?.Hide();
+            _host.Updated += () => { if (_tray is not null && _host is not null) _tray.ToolTipText = _host.MenuBarText(); };
 
             TrySetupTray(desktop);
             _host.Start();
@@ -46,16 +48,21 @@ public partial class App : Application
             menu.Items.Add(refresh);
 
             menu.Items.Add(BuildAccountsMenu());
+
+            var settings = new NativeMenuItem("Settings");
+            settings.Click += (_, _) => _host?.OpenSettings();
+            menu.Items.Add(settings);
+
             menu.Items.Add(new NativeMenuItemSeparator());
 
             var quit = new NativeMenuItem("Quit");
             quit.Click += (_, _) => desktop.Shutdown();
             menu.Items.Add(quit);
 
-            var tray = new TrayIcon { ToolTipText = "LLM Usage", Icon = BuildTrayIcon(), Menu = menu };
-            tray.Clicked += (_, _) => TogglePopover();
+            _tray = new TrayIcon { ToolTipText = "LLM Usage", Icon = BuildTrayIcon(), Menu = menu };
+            _tray.Clicked += (_, _) => TogglePopover();
 
-            TrayIcon.SetIcons(this, new TrayIcons { tray });
+            TrayIcon.SetIcons(this, new TrayIcons { _tray });
         }
         catch
         {

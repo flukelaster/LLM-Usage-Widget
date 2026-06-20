@@ -3,6 +3,7 @@ using LLMUsageWidget.Core.Auth;
 using LLMUsageWidget.Core.Domain;
 using LLMUsageWidget.Core.Engine;
 using LLMUsageWidget.Core.Providers;
+using LLMUsageWidget.Core.Settings;
 using LLMUsageWidget.Core.Support;
 using Xunit;
 
@@ -179,6 +180,36 @@ public class CoreTests
     }
 
     // MARK: - Formatting
+
+    // MARK: - Notifications
+
+    [Fact]
+    public void Notifier_FiresOncePerCycle_AndAfterReset()
+    {
+        var notifier = new UsageNotifier();
+        var resetA = DateTimeOffset.FromUnixTimeSeconds(2_000_000_000);
+        ProviderUsage Claude(double five, DateTimeOffset reset) => new(ProviderId.Claude, new[]
+        {
+            new LimitWindow(LimitWindowKind.FiveHour, five, reset),
+        });
+
+        Assert.Single(notifier.WindowsToNotify(ProviderId.Claude, Claude(0.95, resetA)));
+        Assert.Empty(notifier.WindowsToNotify(ProviderId.Claude, Claude(0.96, resetA)));   // same cycle
+        Assert.Empty(notifier.WindowsToNotify(ProviderId.Claude, Claude(0.50, resetA)));   // back under
+        Assert.Single(notifier.WindowsToNotify(ProviderId.Claude, Claude(0.97, resetA.AddDays(7))));  // rolled over
+    }
+
+    [Fact]
+    public void Settings_EnableToggle_RoundTrips()
+    {
+        var s = new SettingsModel();
+        Assert.True(s.IsEnabled(ProviderId.Codex));     // enabled by default
+        s.SetEnabled(ProviderId.Codex, false);
+        Assert.False(s.IsEnabled(ProviderId.Codex));
+        Assert.Contains("codex", s.DisabledProviders);
+        s.SetEnabled(ProviderId.Codex, true);
+        Assert.True(s.IsEnabled(ProviderId.Codex));
+    }
 
     [Fact]
     public void Formatting_Countdown_Reset_Updated_Numbers()

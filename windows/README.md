@@ -46,8 +46,12 @@ pwsh windows/publish.ps1        # → windows/dist/win-x64/LLMUsageWidget.App.ex
 ```
 
 This emits a **self-contained, single-file** `.exe` (bundles the .NET runtime + Skia), so it runs on
-a clean Windows machine with nothing pre-installed. The same `dotnet publish` command also works from
-macOS/Linux to cross-build the Windows binary.
+a clean Windows machine with nothing pre-installed.
+
+> Build on **Windows** for the full release: the project targets a Windows TFM there, enabling native
+> **toast notifications** and **launch-at-login** (behind `#if WINDOWS`). The same `dotnet publish`
+> cross-builds from macOS/Linux too, but that build targets plain `net10.0`, where those two features
+> compile out to no-ops.
 
 ## How auth & storage map to Windows
 
@@ -60,8 +64,20 @@ macOS/Linux to cross-build the Windows binary.
 
 The provider endpoints, OAuth client IDs, and parsing logic are identical to the macOS app.
 
+## Settings
+
+<div align="center">
+  <img src="../docs/windows-settings.png" alt="Windows settings window" width="300">
+</div>
+
+Open from the tray's **Settings** item: menu-bar focus (closest-to-full or a pinned provider),
+menu-bar display style, refresh interval, near-limit notifications, **launch at login** (per-user
+`HKCU\…\Run`), and per-provider enable toggles. Every change persists to
+`%APPDATA%\LLMUsageWidget\settings.json` and applies immediately.
+
 ## Status
 
-Done: core (tested), themed popover UI, OAuth + providers + polling engine, tray + sign-in, and
-self-contained packaging. Not yet ported from macOS: the **Settings** window (menu-bar focus, poll
-interval, notifications), **launch-at-login** (HKCU `Run`), and **toast notifications**.
+Feature-complete relative to the macOS app: tested core, themed popover, OAuth + providers + polling
+engine, tray + sign-in, **Settings** window, **launch-at-login**, native **toast notifications**, and
+self-contained packaging. Remaining is polish (a brand-art tray icon, an installer/code-signing) and
+end-to-end testing of the interactive OAuth flows on a real Windows machine.

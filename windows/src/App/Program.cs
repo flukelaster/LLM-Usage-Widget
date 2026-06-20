@@ -9,9 +9,11 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
-        // Headless render path: `LLMUsageWidget.App --snapshot out.png` (mirrors the macOS app).
+        // Headless render paths (mirror the macOS app's --snapshot).
         if (args.Length >= 2 && args[0] == "--snapshot")
             return Snapshot.Run(args[1]);
+        if (args.Length >= 2 && args[0] == "--snapshot-settings")
+            return Snapshot.RunSettings(args[1]);
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         return 0;

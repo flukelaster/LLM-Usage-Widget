@@ -1,0 +1,58 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LLMUsageWidget.App.ViewModels"
+        x:Class="LLMUsageWidget.App.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="LLM Usage — Settings"
+        Width="420" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="#0B1120">
+  <Border Padding="22">
+    <StackPanel Spacing="16">
+
+      <TextBlock Text="Settings" FontSize="18" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+
+      <Grid ColumnDefinitions="*,180" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
+        <TextBlock Grid.Row="0" Text="Menu bar focus" Foreground="#CBD5E1" VerticalAlignment="Center"/>
+        <ComboBox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding FocusOptions}" SelectedIndex="{Binding FocusIndex}"/>
+
+        <TextBlock Grid.Row="1" Text="Menu bar shows" Foreground="#CBD5E1" VerticalAlignment="Center"/>
+        <ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding DisplayOptions}" SelectedIndex="{Binding DisplayIndex}"/>
+
+        <TextBlock Grid.Row="2" Text="Refresh every" Foreground="#CBD5E1" VerticalAlignment="Center"/>
+        <ComboBox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding IntervalOptions}" SelectedIndex="{Binding IntervalIndex}"/>
+      </Grid>
+
+      <Border Height="1" Background="#1E293B"/>
+
+      <CheckBox Content="Notify when usage exceeds 90%" Foreground="#F8FAFC"
+                IsChecked="{Binding NotificationsEnabled}"/>
+      <CheckBox Content="Launch at login" Foreground="#F8FAFC"
+                IsChecked="{Binding LaunchAtLogin}" IsEnabled="{Binding LaunchSupported}"/>
+
+      <Border Height="1" Background="#1E293B"/>
+
+      <TextBlock Text="Providers" Foreground="#94A3B8" FontSize="13"/>
+      <ItemsControl ItemsSource="{Binding Providers}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate><StackPanel Spacing="8"/></ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ProviderToggleViewModel">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="{Binding Name}" Foreground="#F8FAFC" VerticalAlignment="Center"/>
+              <ToggleSwitch Grid.Column="1" IsChecked="{Binding Enabled}"/>
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <TextBlock Text="Sign in to each provider from the tray's Accounts menu."
+                 Foreground="#64748B" FontSize="12" TextWrapping="Wrap"/>
+
+    </StackPanel>
+  </Border>
+</Window>
