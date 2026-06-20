@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 // Build docs/cover.png — the GitHub social-preview / share card.
-// Composes an HTML card (theme-matched to the app) with the real popover
-// screenshot, then renders it with headless Chrome at 2× for crispness.
+// Composes an HTML card (theme-matched to the app) with the real macOS + Windows
+// popover screenshots, then renders it with headless Chrome at 2× for crispness.
 //
 //   node Scripts/make_cover.mjs
 //
-// Requires: Google Chrome (headless) + docs/screenshot.png.
+// Requires: Google Chrome (headless) + docs/screenshot.png + docs/windows-screenshot.png.
 //
 // Design note: color is kept deliberately restrained — it lives only where it
 // means something (the brand gauge mark and the real data bars in the
-// screenshot). The surrounding chrome stays neutral navy/slate so the product
-// shot is what carries the eye.
+// screenshots). The surrounding chrome stays neutral navy/slate so the product
+// shots are what carry the eye.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -18,7 +18,8 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const shot = readFileSync(join(root, "docs", "screenshot.png")).toString("base64");
+const shotMac = readFileSync(join(root, "docs", "screenshot.png")).toString("base64");
+const shotWin = readFileSync(join(root, "docs", "windows-screenshot.png")).toString("base64");
 const htmlPath = join(root, "docs", "cover.html");
 const outPath = join(root, "docs", "cover.png");
 
@@ -44,14 +45,14 @@ const html = /* html */ `<!doctype html>
   }
   .grid {
     position: relative; z-index: 1;
-    display: grid; grid-template-columns: 1fr 360px;
+    display: grid; grid-template-columns: 1fr 470px;
     height: 100%; align-items: center;
-    padding: 56px 60px;
-    gap: 40px;
+    padding: 56px 56px 56px 60px;
+    gap: 28px;
   }
-  .left { max-width: 700px; }
+  .left { max-width: 660px; }
 
-  .brand { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; }
+  .brand { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
   .logo {
     width: 60px; height: 60px; border-radius: 16px;
     background: linear-gradient(180deg, #243049, #0B1120);
@@ -61,43 +62,46 @@ const html = /* html */ `<!doctype html>
   }
   .logo svg { width: 40px; height: 40px; }
   .eyebrow {
-    font-size: 16px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+    font-size: 15px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
     color: #8294AC;
   }
 
   h1 {
-    font-size: 72px; line-height: 1.02; font-weight: 800; letter-spacing: -.025em;
-    margin-bottom: 22px; color: #F8FAFC;
+    font-size: 70px; line-height: 1.02; font-weight: 800; letter-spacing: -.025em;
+    margin-bottom: 20px; color: #F8FAFC;
   }
   h1 .accent { color: #93A4BC; }   /* subtle tonal shift, not a new hue */
   .tag {
-    font-size: 25px; line-height: 1.42; color: #AEBACE; font-weight: 450;
-    max-width: 640px; margin-bottom: 34px;
+    font-size: 24px; line-height: 1.42; color: #AEBACE; font-weight: 450;
+    max-width: 600px; margin-bottom: 30px;
   }
   .tag b { color: #F1F5F9; font-weight: 650; }
 
-  .features { display: flex; flex-direction: column; gap: 13px; margin-bottom: 36px; }
-  .feat { display: flex; align-items: center; gap: 14px; font-size: 19px; color: #D5DDEA; }
+  .features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+  .feat { display: flex; align-items: center; gap: 14px; font-size: 18px; color: #D5DDEA; }
   .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #5B6B85; }
 
-  .providers { display: flex; align-items: center; gap: 14px; }
+  .providers { display: flex; align-items: center; gap: 12px; }
   .chip {
     display: flex; align-items: center; gap: 9px;
-    padding: 9px 16px 9px 12px; border-radius: 999px;
+    padding: 9px 15px 9px 12px; border-radius: 999px;
     background: rgba(15,23,42,.5); border: 1px solid rgba(255,255,255,.08);
-    font-size: 17px; font-weight: 600; color: #C7D0DE;
+    font-size: 16px; font-weight: 600; color: #C7D0DE;
   }
-  .chip svg { width: 22px; height: 22px; }
+  .chip svg { width: 21px; height: 21px; }
 
-  /* right: floating popover screenshot — the one place color lives */
-  .right { display: grid; place-items: center; height: 100%; }
-  .shot-wrap { position: relative; transform: rotate(-2.5deg); }
-  .shot {
-    height: 540px; width: auto; display: block;
-    border-radius: 20px;
-    border: 1px solid rgba(255,255,255,.10);
-    box-shadow: 0 40px 90px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.25);
+  /* right: the two real popovers, overlapping — macOS in front, Windows behind */
+  .right { position: relative; height: 100%; }
+  .shots { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .pop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .pop img {
+    height: 430px; width: auto; display: block;
+    border-radius: 18px; border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 36px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.25);
   }
+  .pop .os { font-size: 14px; font-weight: 600; letter-spacing: .04em; color: #AEBACE; }
+  .pop.mac { transform: rotate(-3deg); z-index: 2; margin-right: -92px; margin-top: -6px; }
+  .pop.win { transform: rotate(4.5deg); z-index: 1; opacity: .96; }
 </style></head>
 <body>
   <div class="ring"></div>
@@ -116,24 +120,24 @@ const html = /* html */ `<!doctype html>
             </linearGradient></defs>
           </svg>
         </div>
-        <div class="eyebrow">macOS&nbsp;·&nbsp;Menu&nbsp;Bar&nbsp;App</div>
+        <div class="eyebrow">macOS&nbsp;·&nbsp;Windows&nbsp;·&nbsp;Menu&nbsp;Bar&nbsp;&amp;&nbsp;Tray</div>
       </div>
 
       <h1>LLM&nbsp;Usage&nbsp;<span class="accent">Widget</span></h1>
       <p class="tag">
         Real-time usage limits for <b>Claude</b>, <b>Codex</b>, and <b>GitHub&nbsp;Copilot</b> —
-        live in your menu bar, the way Claude Desktop surfaces your usage windows.
+        in your menu bar on <b>macOS</b> and your system tray on <b>Windows</b>.
       </p>
 
       <div class="features">
         <div class="feat"><span class="dot"></span>
           5-hour &amp; weekly bars with % used and a reset countdown</div>
         <div class="feat"><span class="dot"></span>
-          The most-constrained % shown live, right in the menu bar</div>
+          The most-constrained % shown live, right in the menu bar / tray</div>
         <div class="feat"><span class="dot"></span>
           Near-limit notification when any window crosses 90%</div>
         <div class="feat"><span class="dot"></span>
-          In-app OAuth (PKCE) — tokens live only in your Keychain</div>
+          In-app OAuth (PKCE) — tokens kept in the OS keychain / DPAPI</div>
       </div>
 
       <div class="providers">
@@ -155,8 +159,15 @@ const html = /* html */ `<!doctype html>
     </div>
 
     <div class="right">
-      <div class="shot-wrap">
-        <img class="shot" src="data:image/png;base64,${shot}" alt="popover">
+      <div class="shots">
+        <div class="pop mac">
+          <img src="data:image/png;base64,${shotMac}" alt="macOS popover">
+          <div class="os">macOS</div>
+        </div>
+        <div class="pop win">
+          <img src="data:image/png;base64,${shotWin}" alt="Windows popover">
+          <div class="os">Windows</div>
+        </div>
       </div>
     </div>
   </div>
