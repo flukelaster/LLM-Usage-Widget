@@ -44,6 +44,18 @@ func runSelfChecks() -> Int {
     } catch { check("claude fractional threw", false) }
 
     do {
+        // Plan comes from /api/oauth/profile, then flows through parse() into the badge.
+        let profile = #"{"account":{"has_claude_max":true,"has_claude_pro":false},"organization":{"organization_type":"claude_max"}}"#
+        check("claude profile plan = claude_max", ClaudeProfileFetcher.parsePlan(Data(profile.utf8)) == "claude_max")
+        let booleansOnly = #"{"account":{"has_claude_max":false,"has_claude_pro":true},"organization":{"organization_type":null}}"#
+        check("claude profile falls back to booleans", ClaudeProfileFetcher.parsePlan(Data(booleansOnly.utf8)) == "claude_pro")
+        check("claude profile no plan -> nil", ClaudeProfileFetcher.parsePlan(Data("{}".utf8)) == nil)
+        let usage = try ClaudeUsageFetcher.parse(Data(#"{"five_hour":{"utilization":2.0}}"#.utf8), plan: "claude_max")
+        check("claude plan = Max", usage.plan?.displayName == "Max")
+        check("claude plan = Pro", PlanInfo.from(rawPlanType: "claude_pro")?.displayName == "Pro")
+    } catch { check("claude profile/plan threw", false) }
+
+    do {
         let json = """
         {"rate_limits":{"primary":{"used_percent":88.0,"window_minutes":300,"resets_at":1781000000},
          "secondary":{"used_percent":93.0,"window_minutes":10080,"resets_at":1781500000},"plan_type":"pro"}}

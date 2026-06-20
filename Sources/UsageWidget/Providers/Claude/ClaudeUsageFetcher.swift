@@ -26,7 +26,8 @@ struct ClaudeUsageFetcher: Sendable {
     static let usageURL = URL(string: "https://api.anthropic.com/api/oauth/usage")!
     static let clientVersion = "2.1.0"
 
-    func fetch(accessToken: String) async throws -> ProviderUsage {
+    /// `plan` is the raw plan string from `ClaudeProfileFetcher` (the usage endpoint carries none).
+    func fetch(accessToken: String, plan: String? = nil) async throws -> ProviderUsage {
         var request = URLRequest(url: Self.usageURL)
         request.httpMethod = "GET"
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -36,11 +37,11 @@ struct ClaudeUsageFetcher: Sendable {
         request.setValue("claude-code/\(Self.clientVersion)", forHTTPHeaderField: "User-Agent")
 
         let data = try await UsageHTTP.get(request)
-        return try Self.parse(data)
+        return try Self.parse(data, plan: plan)
     }
 
     /// Pure JSON → `ProviderUsage` mapping (no network), exposed for unit tests.
-    static func parse(_ data: Data) throws -> ProviderUsage {
+    static func parse(_ data: Data, plan: String? = nil) throws -> ProviderUsage {
         let decoded: ClaudeUsageResponse
         do {
             decoded = try JSONDecoder().decode(ClaudeUsageResponse.self, from: data)
@@ -49,7 +50,7 @@ struct ClaudeUsageFetcher: Sendable {
         }
         let windows = map(decoded)
         guard !windows.isEmpty else { throw ProviderError.decoding("No usage windows in response") }
-        return ProviderUsage(providerID: .claude, plan: nil, windows: windows, tokens: nil, capturedAt: Date())
+        return ProviderUsage(providerID: .claude, plan: PlanInfo.from(rawPlanType: plan), windows: windows, tokens: nil, capturedAt: Date())
     }
 
     private static func map(_ response: ClaudeUsageResponse) -> [LimitWindow] {
