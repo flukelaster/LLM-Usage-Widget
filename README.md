@@ -17,6 +17,9 @@ menu bar, and a click-away popover with usage bars, reset countdowns, and near-l
 ![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-243049)
 ![Swift 6](https://img.shields.io/badge/Swift-6-FA7343?logo=swift&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-native-1E293B)
+![Windows](https://img.shields.io/badge/Windows-.NET%2010%20%2B%20Avalonia-0B1120?logo=windows&logoColor=white)
+
+<sub>A **Windows** port (.NET 10 + Avalonia, same design and providers) lives in [`windows/`](windows/README.md).</sub>
 
 </div>
 

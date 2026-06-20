@@ -4,6 +4,7 @@ obj/
 [Dd]ebug/
 [Rr]elease/
 publish/
+dist/
 *.user
 
 # Rider / VS

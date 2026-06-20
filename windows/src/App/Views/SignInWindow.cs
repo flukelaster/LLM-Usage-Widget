@@ -24,7 +24,7 @@ public sealed class SignInWindow : Window
         var tcs = new TaskCompletionSource<string?>();
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            var box = new TextBox { Watermark = "Paste code here" };
+            var box = new TextBox { PlaceholderText = "Paste code here" };
             var connect = new Button { Content = "Connect", HorizontalAlignment = HorizontalAlignment.Right };
             var win = new SignInWindow { Title = $"Sign in — {provider}" };
 
