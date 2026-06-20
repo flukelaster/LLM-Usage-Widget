@@ -4,22 +4,24 @@
 
 <h1>LLM Usage Widget</h1>
 
-<p><strong>A native macOS menu-bar app showing real-time usage limits for your main LLM tools —
-<a href="https://claude.ai">Claude</a>, <a href="https://chatgpt.com">Codex</a>, and
-<a href="https://github.com/features/copilot">GitHub Copilot</a>.</strong></p>
+<p><strong>A menu-bar &amp; system-tray app for <b>macOS</b> and <b>Windows</b>, showing real-time
+usage limits for your main LLM tools — <a href="https://claude.ai">Claude</a>,
+<a href="https://chatgpt.com">Codex</a>, and <a href="https://github.com/features/copilot">GitHub Copilot</a>.</strong></p>
 
 <p>It surfaces your usage windows the way Claude Desktop does: a glanceable percentage in the
-menu bar, and a click-away popover with usage bars, reset countdowns, and near-limit alerts.</p>
+menu bar (or Windows tray), and a click-away popover with usage bars, reset countdowns, and near-limit alerts.</p>
 
-[![Download latest .dmg](https://img.shields.io/badge/Download-latest%20.dmg-2EA043?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/flukelaster/LLM-Usage-Widget/releases/latest)
+[![Download for macOS](https://img.shields.io/badge/Download-macOS%20.dmg-2EA043?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/flukelaster/LLM-Usage-Widget/releases/latest/download/LLM-Usage-Widget.dmg)
+&nbsp;
+[![Download for Windows](https://img.shields.io/badge/Download-Windows%20.exe-2563EB?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/flukelaster/LLM-Usage-Widget/releases/latest/download/LLM-Usage-Widget-windows-x64.exe)
 
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-0B1120?logo=apple&logoColor=white)
 ![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-243049)
+![Windows 10/11](https://img.shields.io/badge/Windows-10%2F11%20x64-0B1120?logo=windows&logoColor=white)
 ![Swift 6](https://img.shields.io/badge/Swift-6-FA7343?logo=swift&logoColor=white)
-![SwiftUI](https://img.shields.io/badge/SwiftUI-native-1E293B)
-![Windows](https://img.shields.io/badge/Windows-.NET%2010%20%2B%20Avalonia-0B1120?logo=windows&logoColor=white)
+![.NET 10](https://img.shields.io/badge/.NET-10%20%2B%20Avalonia-512BD4?logo=dotnet&logoColor=white)
 
-<sub>A **Windows** port (.NET 10 + Avalonia, same design and providers) lives in [`windows/`](windows/README.md).</sub>
+<sub>macOS is native SwiftUI; the **Windows** build is .NET 10 + Avalonia — see [`windows/`](windows/README.md). Both share the same providers and design.</sub>
 
 </div>
 
@@ -48,17 +50,20 @@ Click the menu-bar gauge to see, per provider:
 
 ## Installation
 
-Download the latest disk image from the
-[**Releases**](https://github.com/flukelaster/LLM-Usage-Widget/releases/latest) page and drag the
-app into **Applications**. Requires macOS 14 (Sonoma) or later on Apple Silicon.
+Grab the latest build from the
+[**Releases**](https://github.com/flukelaster/LLM-Usage-Widget/releases/latest) page:
+
+- **macOS** — download `LLM-Usage-Widget.dmg` and drag the app into **Applications**. Requires
+  macOS 14 (Sonoma) or later on Apple Silicon. It's menu-bar-only (`LSUIElement`, no Dock icon) —
+  look for the gauge in the top-right of the menu bar.
+- **Windows** — download `LLM-Usage-Widget-windows-x64.exe` and run it. Requires Windows 10/11 (x64).
+  It's self-contained (no .NET install needed) and lives in the system tray — click the gauge for the
+  popover. See [`windows/`](windows/README.md) for details.
 
 > [!NOTE]
-> The build is ad-hoc signed (no Apple Developer ID), so the **first launch** needs a one-time
-> Gatekeeper step: right-click the app and choose **Open**, then confirm. See
-> [Distribution](#distribution) for the details and the notarization path.
-
-The app is menu-bar-only (`LSUIElement`, no Dock icon) — look for the gauge in the top-right of the
-menu bar.
+> Both builds are ad-hoc / unsigned, so the **first launch** needs a one-time confirmation: on macOS,
+> right-click the app → **Open**, then confirm (see [Distribution](#distribution)); on Windows,
+> SmartScreen may warn — choose **More info → Run anyway**.
 
 ## Building from source
 
