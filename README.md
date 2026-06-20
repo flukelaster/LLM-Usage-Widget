@@ -30,20 +30,25 @@ menu bar (or Windows tray), and a click-away popover with usage bars, reset coun
 ## Features
 
 <table>
-<tr><td width="58%" valign="top">
+<tr><td width="54%" valign="top">
 
-Click the menu-bar gauge to see, per provider:
+Click the menu-bar / tray gauge to see, per provider:
 
 - **5-hour and weekly usage bars**, each with the percentage used and a reset countdown.
 - **Threshold colors** — green below 60%, amber 60–85%, red above 85%.
 - **Plan badge** (Max / Pro / Plus …) and an *up to date / rate-limited / stale* status.
 - **A live percentage in the menu bar** — by default the provider closest to its limit, or pin a specific provider in Settings.
 - **Near-limit notifications** when any window crosses 90% (once per window, per reset cycle).
-- **In-app OAuth** (PKCE) — tokens are stored only in your macOS Keychain.
+- **In-app OAuth** (PKCE) — tokens are stored only in your OS credential store (macOS Keychain / Windows DPAPI).
 
-</td><td width="42%" valign="top" align="center">
+</td><td width="46%" valign="top" align="center">
 
-<img src="docs/screenshot.png" alt="Popover showing Claude, Codex and Copilot usage" width="300">
+<table align="center">
+<tr>
+<td align="center"><img src="docs/screenshot.png" alt="macOS popover" width="168"><br><sub><b>macOS</b></sub></td>
+<td align="center"><img src="docs/windows-screenshot.png" alt="Windows popover" width="168"><br><sub><b>Windows</b></sub></td>
+</tr>
+</table>
 
 </td></tr>
 </table>
