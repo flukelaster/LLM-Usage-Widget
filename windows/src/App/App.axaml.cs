@@ -1,0 +1,90 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using LLMUsageWidget.App.Theming;
+using LLMUsageWidget.App.Views;
+
+namespace LLMUsageWidget.App;
+
+public partial class App : Application
+{
+    private PopoverWindow? _popover;
+
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+
+    public override void OnFrameworkInitializationCompleted()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            // Tray-only app: no main window, runs until the user quits.
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+            _popover = new PopoverWindow { DataContext = MockData.Popover() };
+            _popover.Deactivated += (_, _) => _popover?.Hide();
+
+            TrySetupTray(desktop);
+        }
+
+        base.OnFrameworkInitializationCompleted();
+    }
+
+    private void TrySetupTray(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        try
+        {
+            var menu = new NativeMenu();
+            var settings = new NativeMenuItem("Settings");
+            var quit = new NativeMenuItem("Quit");
+            quit.Click += (_, _) => desktop.Shutdown();
+            menu.Items.Add(settings);
+            menu.Items.Add(new NativeMenuItemSeparator());
+            menu.Items.Add(quit);
+
+            var tray = new TrayIcon { ToolTipText = "LLM Usage", Icon = BuildTrayIcon(), Menu = menu };
+            tray.Clicked += (_, _) => TogglePopover();
+
+            TrayIcon.SetIcons(this, new TrayIcons { tray });
+        }
+        catch
+        {
+            // Tray is best-effort (e.g. headless / unsupported session) — the app still runs.
+        }
+    }
+
+    private void TogglePopover()
+    {
+        if (_popover is null) return;
+        if (_popover.IsVisible)
+        {
+            _popover.Hide();
+            return;
+        }
+
+        var screen = _popover.Screens.Primary ?? _popover.Screens.All.FirstOrDefault();
+        if (screen is not null)
+        {
+            var area = screen.WorkingArea;
+            int width = (int)(340 * screen.Scaling);
+            _popover.Position = new PixelPoint(area.X + area.Width - width - (int)(12 * screen.Scaling), area.Y + (int)(8 * screen.Scaling));
+        }
+        _popover.Show();
+        _popover.Activate();
+    }
+
+    private static WindowIcon BuildTrayIcon()
+    {
+        using var rtb = new RenderTargetBitmap(new PixelSize(32, 32), new Vector(96, 96));
+        using (var ctx = rtb.CreateDrawingContext())
+        {
+            ctx.DrawEllipse(null, new Pen(Palette.Warn, 4), new Point(16, 16), 11, 11);
+        }
+        using var ms = new MemoryStream();
+        rtb.Save(ms);
+        ms.Position = 0;
+        return new WindowIcon(ms);
+    }
+}

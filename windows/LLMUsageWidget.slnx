@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/src/" />
+  <Folder Name="/src/App/">
+    <Project Path="src/App/LLMUsageWidget.App.csproj" />
+  </Folder>
   <Folder Name="/src/Core/">
     <Project Path="src/Core/LLMUsageWidget.Core.csproj" />
   </Folder>

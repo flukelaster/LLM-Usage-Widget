@@ -1,0 +1,12 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:theming="using:LLMUsageWidget.App.Theming"
+             x:Class="LLMUsageWidget.App.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+    <Application.Resources>
+        <theming:FractionToWidthConverter x:Key="FracW" />
+    </Application.Resources>
+</Application>
