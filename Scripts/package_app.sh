@@ -13,8 +13,8 @@ set -euo pipefail
 APP_NAME="UsageWidget"
 BUNDLE_ID="com.flukelaster.usagewidget"
 DISPLAY_NAME="LLM Usage Widget"
-VERSION="0.2.0"
-BUILD="2"
+VERSION="0.3.0"
+BUILD="3"
 MIN_OS="14.0"
 CONFIG="${1:-debug}"
 

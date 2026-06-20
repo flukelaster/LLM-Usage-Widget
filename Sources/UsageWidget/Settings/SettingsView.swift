@@ -129,7 +129,7 @@ private struct AboutSettingsTab: View {
                 .font(.system(size: 40, weight: .light))
                 .foregroundStyle(.tint)
             Text("LLM Usage Widget").font(.headline)
-            Text("Version 0.2.0").font(.subheadline).foregroundStyle(.secondary)
+            Text("Version 0.3.0").font(.subheadline).foregroundStyle(.secondary)
             Text("Real-time Claude, Codex & Copilot usage limits in your menu bar.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
