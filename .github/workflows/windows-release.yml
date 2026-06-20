@@ -1,0 +1,58 @@
+name: Windows build
+
+# Builds the self-contained Windows .exe on a real Windows runner (so the native toast +
+# launch-at-login features behind #if WINDOWS are compiled in), then:
+#   - on a published GitHub Release → attaches the .exe to that release
+#   - on manual run (workflow_dispatch) → uploads it as a build artifact you can download
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to attach assets to the release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: windows
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run core tests
+        run: dotnet test tests/Core.Tests/LLMUsageWidget.Core.Tests.csproj -c Release
+
+      - name: Publish win-x64 (self-contained, single-file)
+        run: >
+          dotnet publish src/App/LLMUsageWidget.App.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=none
+          -o publish
+
+      - name: Stage artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item publish/LLMUsageWidget.App.exe dist/LLM-Usage-Widget-windows-x64.exe
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LLM-Usage-Widget-windows-x64
+          path: windows/dist/LLM-Usage-Widget-windows-x64.exe
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: windows/dist/LLM-Usage-Widget-windows-x64.exe
