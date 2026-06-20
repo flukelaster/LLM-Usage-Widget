@@ -25,6 +25,14 @@ private struct GeneralSettingsTab: View {
     var body: some View {
         @Bindable var settings = settings
         Form {
+            Picker("Menu bar focus", selection: $settings.menuBarProvider) {
+                Text("Closest to full").tag(ProviderID?.none)
+                ForEach(store.providers, id: \.id) { provider in
+                    Text(provider.displayName).tag(ProviderID?.some(provider.id))
+                }
+            }
+            .onChange(of: settings.menuBarProvider) { settings.save() }
+
             Picker("Menu bar shows", selection: $settings.menuBarDisplay) {
                 ForEach(SettingsModel.MenuBarDisplay.allCases) { Text($0.title).tag($0) }
             }

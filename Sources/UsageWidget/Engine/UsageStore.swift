@@ -69,6 +69,18 @@ final class UsageStore {
         return best.map { (id: $0.0, fraction: $0.1) }
     }
 
+    /// The provider the menu bar should display. If the user pinned one (`pinned`) and it's enabled
+    /// with data, that wins; otherwise we fall back to whichever provider is closest to full so the
+    /// menu bar still shows something useful. `nil` when nothing has data yet.
+    func menuBarFocus(pinned: ProviderID?) -> (id: ProviderID, fraction: Double)? {
+        if let pinned,
+           settings.isEnabled(pinned),
+           let fraction = states[pinned]?.usage?.maxUtilization {
+            return (id: pinned, fraction: fraction)
+        }
+        return peakProvider
+    }
+
     var hasAnyData: Bool { states.values.contains { $0.usage != nil } }
     var anySignedIn: Bool { states.values.contains { $0.authState == .signedIn } }
     var anyEnabledSignedIn: Bool {

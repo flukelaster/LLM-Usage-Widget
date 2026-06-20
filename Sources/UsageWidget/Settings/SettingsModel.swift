@@ -7,10 +7,12 @@ import Observation
 @MainActor
 @Observable
 final class SettingsModel {
+    /// How the menu-bar item is rendered. Orthogonal to *which* provider it focuses on
+    /// (see `menuBarProvider`).
     enum MenuBarDisplay: String, CaseIterable, Codable, Sendable, Identifiable {
-        /// Brand icon of the provider closest to a limit + its %. (Default — answers "whose 94%?")
+        /// Brand icon of the focused provider + its %. (Default — answers "whose 94%?")
         case peakProvider
-        /// Gauge icon + the closest-to-full %, no brand icon.
+        /// Gauge icon + the focused %, no brand icon.
         case peakPercent
         /// Gauge icon only.
         case iconOnly
@@ -18,8 +20,8 @@ final class SettingsModel {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .peakProvider: return "Closest to full — icon + %"
-            case .peakPercent: return "Closest to full — % only"
+            case .peakProvider: return "Provider icon + %"
+            case .peakPercent: return "Gauge + %"
             case .iconOnly: return "Icon only"
             }
         }
@@ -30,6 +32,8 @@ final class SettingsModel {
     /// Global poll cadence; per-provider minimums still apply (Claude is clamped up).
     var pollIntervalSeconds: Int
     var menuBarDisplay: MenuBarDisplay
+    /// Which provider the menu bar focuses on. `nil` = whichever is closest to full (default).
+    var menuBarProvider: ProviderID?
     /// Notify when a usage window crosses ~90%.
     var notificationsEnabled: Bool
 
@@ -39,6 +43,7 @@ final class SettingsModel {
         static let disabled = "disabledProviders"
         static let interval = "pollIntervalSeconds"
         static let display = "menuBarDisplay"
+        static let menuBarProvider = "menuBarProvider"
         static let notifications = "notificationsEnabled"
     }
 
@@ -49,6 +54,7 @@ final class SettingsModel {
         let storedInterval = defaults.integer(forKey: Key.interval)
         self.pollIntervalSeconds = storedInterval > 0 ? storedInterval : 300
         self.menuBarDisplay = (defaults.string(forKey: Key.display)).flatMap(MenuBarDisplay.init(rawValue:)) ?? .peakProvider
+        self.menuBarProvider = defaults.string(forKey: Key.menuBarProvider).map(ProviderID.init(rawValue:))
         self.notificationsEnabled = (defaults.object(forKey: Key.notifications) as? Bool) ?? true
     }
 
@@ -63,6 +69,7 @@ final class SettingsModel {
         defaults.set(disabledProviders.map(\.rawValue), forKey: Key.disabled)
         defaults.set(pollIntervalSeconds, forKey: Key.interval)
         defaults.set(menuBarDisplay.rawValue, forKey: Key.display)
+        defaults.set(menuBarProvider?.rawValue, forKey: Key.menuBarProvider)
         defaults.set(notificationsEnabled, forKey: Key.notifications)
     }
 }

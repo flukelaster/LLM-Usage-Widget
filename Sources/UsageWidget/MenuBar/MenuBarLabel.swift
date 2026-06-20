@@ -2,34 +2,36 @@ import SwiftUI
 
 /// The status-bar item. By default it focuses on the **provider closest to a limit** — showing its
 /// brand mark plus that provider's %, threshold-colored — so a single glance answers "whose 94%?".
+/// The user can pin a specific provider via Settings (`menuBarProvider`).
 struct MenuBarLabel: View {
     @Environment(UsageStore.self) private var store
     @Environment(SettingsModel.self) private var settings
 
     var body: some View {
+        let focus = store.menuBarFocus(pinned: settings.menuBarProvider)
         switch settings.menuBarDisplay {
         case .iconOnly:
-            Image(systemName: gaugeSymbol(for: store.peakProvider?.fraction ?? 0))
+            Image(systemName: gaugeSymbol(for: focus?.fraction ?? 0))
 
         case .peakPercent:
-            if let peak = store.peakProvider {
-                Image(systemName: gaugeSymbol(for: peak.fraction))
-                Text(percentText(peak.fraction))
-                    .foregroundStyle(Theme.threshold(peak.fraction))
+            if let focus {
+                Image(systemName: gaugeSymbol(for: focus.fraction))
+                Text(percentText(focus.fraction))
+                    .foregroundStyle(Theme.threshold(focus.fraction))
             } else {
                 Image(systemName: gaugeSymbol(for: 0))
             }
 
         case .peakProvider:
-            // Brand mark of the closest-to-full provider (rasterized to a template image, since the
+            // Brand mark of the focused provider (rasterized to a template image, since the
             // menu bar can't render SwiftUI Shapes) + its %.
-            if let peak = store.peakProvider {
-                if let icon = BrandMenuBarIcon.templateImage(for: peak.id) {
+            if let focus {
+                if let icon = BrandMenuBarIcon.templateImage(for: focus.id) {
                     Image(nsImage: icon)
                 } else {
-                    Image(systemName: gaugeSymbol(for: peak.fraction))
+                    Image(systemName: gaugeSymbol(for: focus.fraction))
                 }
-                Text(percentText(peak.fraction))
+                Text(percentText(focus.fraction))
             } else {
                 Image(systemName: gaugeSymbol(for: 0))
             }

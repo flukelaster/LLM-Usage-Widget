@@ -32,7 +32,7 @@ Click the menu-bar gauge to see, per provider:
 - **5-hour and weekly usage bars**, each with the percentage used and a reset countdown.
 - **Threshold colors** — green below 60%, amber 60–85%, red above 85%.
 - **Plan badge** (Max / Pro / Plus …) and an *up to date / rate-limited / stale* status.
-- **A live percentage in the menu bar** itself — the most-constrained window across providers.
+- **A live percentage in the menu bar** — by default the provider closest to its limit, or pin a specific provider in Settings.
 - **Near-limit notifications** when any window crosses 90% (once per window, per reset cycle).
 - **In-app OAuth** (PKCE) — tokens are stored only in your macOS Keychain.
 
@@ -77,8 +77,8 @@ Open the popover and click **Sign in** on a provider card:
 | **Claude** | Opens your browser to Anthropic, which shows a code (`abc123#xyz`). Paste it back into the card. Anthropic rejects arbitrary loopback redirects, so this paste step is required. |
 | **Copilot** | Uses GitHub's device flow: the card shows a short code; enter it at `github.com/login/device` (opened for you) and the app finishes automatically. |
 
-Providers (enable / disable, sign out), poll interval, menu-bar display, near-limit notifications,
-and **Launch at login** are all managed from **Settings** in the footer of the popover.
+Providers (enable / disable, sign out), poll interval, **menu-bar focus and display**, near-limit
+notifications, and **Launch at login** are all managed from **Settings** in the footer of the popover.
 
 ## How it works
 
@@ -89,6 +89,9 @@ Each provider exposes the same usage endpoint its own first-party client uses:
 | Claude | `GET api.anthropic.com/api/oauth/usage` | The endpoint Claude Code's `/usage` uses. Requires the `anthropic-beta` header and a `claude-code/<ver>` User-Agent. Rate-limits hard, so it is polled at most every 5 minutes with exponential backoff. |
 | Codex | `GET chatgpt.com/backend-api/wham/usage` | Returns the primary (5-hour) and secondary (weekly) windows. |
 | Copilot | `GET api.github.com/copilot_internal/user` | Monthly premium-request quota (`quota_snapshots`) and reset date. |
+
+Claude's `/usage` endpoint carries no plan, so the **Max / Pro** badge comes from a separate profile
+endpoint (`GET api.anthropic.com/api/oauth/profile`) that is fetched once and cached on the token.
 
 The last-good snapshot is cached to `~/Library/Application Support/com.flukelaster.usagewidget/`,
 so the popover shows data instantly and never blanks out on a failed refresh.
